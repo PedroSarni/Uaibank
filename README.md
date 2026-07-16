@@ -1,28 +1,49 @@
 # 🏦 UAIBANK - Sistema Bancário em C
 
-Este é o meu primeiro projeto prático desenvolvido em **C**. O objetivo deste repositório não é ser um sistema complexo e definitivo, mas sim aplicar na prática os conceitos fundamentais da faculdade, como estruturas de controle, manipulação de variáveis, ponteiros e alocação dinâmica de memória.
+Este é um projeto prático de engenharia de software desenvolvido em **C** como parte da disciplina de *Laboratório de Introdução à Ciência de Computação I* (SSC0502) no **ICMC-USP**.
 
-## ⚙️ Funcionalidades
+O objetivo principal deste repositório é demonstrar bases sólidas em lógica de programação, desenvolvimento estruturado e gerenciamento dinâmico de memória na linguagem C.
 
-O sistema roda diretamente no terminal e permite as seguintes operações:
+---
+
+## 📐 Planejamento e Arquitetura
+
+Diferente de muitos projetos introdutórios, este sistema foi totalmente planejado antes de qualquer linha de código ser escrita. Foram desenhados fluxogramas lógicos e esboçados pseudocódigos detalhados para cada módulo principal (Inserção, Busca, Transferência, Remoção e Persistência de Arquivos).
+
+📄 **Relatório de Arquitetura:** Você pode encontrar a documentação completa do planejamento e os fluxogramas detalhados no arquivo [UAIBANK_Architecture_Report.pdf](./UAIBANK_Architecture_Report.pdf)
+
+---
+
+## ⚙️ Funcionalidades Principais
+
+O sistema roda diretamente no terminal e oferece as seguintes operações:
 * **Cadastro de Usuários:** Criação de contas únicas ou múltiplas com validação de idade (maior de 18 anos) e saldo inicial.
-* **Busca:** Localização de clientes utilizando um sistema de ID gerado automaticamente.
-* **Transferências:** Operações seguras entre contas, com validação de remetente, destinatário e saldo disponível.
-* **Remoção de Contas:** Exclusão de usuários com realocação automática da memória.
-* **Persistência Básica:** Salvamento dos dados em um arquivo de texto (`Usuarios.txt`) ao encerrar o programa.
+* **Busca por ID:** Localização rápida de registros de clientes usando um ID sequencial gerado automaticamente.
+* **Transferências Seguras:** Execução e validação de transferências de dinheiro entre contas diferentes, com verificação de saldo e impedimento de auto-transferência.
+* **Remoção de Contas:** Exclusão segura de registros de usuários mantendo a integridade da estrutura e evitando vazamentos de memória.
+* **Persistência Básica:** Salvamento e exportação automática de todos os dados das contas para um arquivo de texto (`Usuarios.txt`) ao encerrar o programa.
+
+---
 
 ## 💻 Tecnologias e Conceitos Aplicados
 * **Linguagem:** C
-* **Conceitos:** 
-  * Estruturas (`struct`)
-  * Ponteiros duplos e passagem por referência
+* **Conceitos Principais:**
+  * Estruturas (`struct`).
+  * Ponteiros duplos e passagem por referência.
   * Alocação Dinâmica de Memória (`realloc`, `free`)
   * Manipulação de Strings (`strcspn`)
-  * Leitura e Escrita de Arquivos (`FILE`)
+  * Manipulação de Entrada/Escrita de Arquivos (`FILE`)
 
-## 🚀 Como executar
+---
 
-Para rodar este projeto na sua máquina, você precisa ter um compilador C (como o GCC) instalado.
+## 👤 Autor
+* **Pedro Artur Barberá Sarni**
+
+---
+
+## 🚀 Como Executar
+
+Para compilar e rodar este projeto localmente, certifique-se de ter um compilador C (como o GCC) instalado.
 
 1. Clone o repositório:
 ```bash
@@ -34,7 +55,7 @@ git clone [https://github.com/PedroSarni/uaibank.git](https://github.com/PedroSa
 gcc UAIBANK.c -o uaibank
 ```
 
-3. Execute o programa:
+3. Execute o executável:
 ```bash
 ./uaibank
 ```
