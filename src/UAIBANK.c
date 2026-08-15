@@ -31,6 +31,11 @@ int gerar_codigo_2FA(){
     return (rand()%90000)+10000;
 }
 
+void exibir_usuario(){
+
+}
+
+
 void enviar_email_2FA(int codigo, char email[]){
     char comando[300];
 
@@ -130,7 +135,6 @@ void novo_usuario(pessoa **banco,int *usuarios, int *gerador_id){
     char telefone_corrigido[30];
     char email[101];
 
-    getchar();
     printf("Nome: ");
     fgets(nome, 101, stdin);
     nome[strcspn(nome, "\n")] = '\0';
@@ -212,6 +216,7 @@ void multiplos_usuario(pessoa **banco,int *usuarios, int *gerador_id){
     int qntd_usuario;
     printf("Quantos usuarios deseja cadastrar? ");
     scanf("%d", &qntd_usuario);
+    limpa_buffer();
     for(int i=0; i<qntd_usuario;i++){
         novo_usuario(banco, usuarios, gerador_id);
     }
@@ -232,6 +237,7 @@ void busca_id(pessoa *banco, int usuario){
                 printf("\n========================================\n");
                 printf("Nome:   %s\nEmail:  %s\nIdade:  %d\nSexo:   %c\nEstado: %s\nSaldo:  %.2fR$",banco[i].nome,banco[i].email, banco[i].idade, banco[i].sexo, banco[i].estado, banco[i].saldo);
                 printf("\n========================================\n\n");
+                banco[i].erros=0;
                 return ;
             }
             else if(strcmp(senha,banco[i].senha)!=0 && banco[i].erros<2){
@@ -256,7 +262,7 @@ void busca_id(pessoa *banco, int usuario){
                 }
                 else{
                     return;
-                }
+                } 
             }
         }
     }
@@ -275,7 +281,7 @@ int validacao_id(pessoa *banco, int usuarios,int id_procurado){
 
 void registrar_transferencia(FILE *arq_trans,int id_remetente,int id_destinatario, float valor){
     fprintf(arq_trans,"%i,%i,%.2f\n",id_remetente,id_destinatario,valor);
-    printf("Dados da transferência foram adicionados no arquivo Tranasferência.csv");
+    printf("Dados da transferência foram adicionados no arquivo Tranasferência.csv\n\n");
 }
 
 void transferencia(pessoa *banco, int usuarios, FILE *arq_trans){
@@ -317,10 +323,46 @@ void transferencia(pessoa *banco, int usuarios, FILE *arq_trans){
         printf("\n=========================================\nTRANSFERÊNCIA NEGADA! SALDO INSUFICIENTE\n=========================================\n\n");
     }
     else{
-        banco[indice_remetente].saldo-=valor;
-        banco[indice_destinatario].saldo+=valor;
-        registrar_transferencia(arq_trans,id_rem,id_dest,valor);
-        printf("\n======================================\nTransferência feita com Sucesso!\n======================================\n\n");
+        char senha [101];
+            getchar();
+            printf("Digite sua Senha: ");
+            fgets(senha, 101, stdin);
+            senha[strcspn(senha, "\n")] = '\0';
+
+        if (strcmp(senha,banco[indice_remetente].senha)==0){
+        //realiza a transferencia de fato
+            banco[indice_remetente].saldo-=valor;
+            banco[indice_destinatario].saldo+=valor;
+            printf("\n======================================\nTransferência feita com Sucesso!\n======================================\n");
+            registrar_transferencia(arq_trans,id_rem,id_dest,valor);
+            banco[indice_remetente].erros=0;
+            return;
+        }
+        else if(strcmp(senha,banco[indice_remetente].senha)!=0 && banco[indice_remetente].erros<2){
+                printf("\n================================\nSenha Inválida! Tente Novamente\n================================\n\n");
+                banco[indice_remetente].erros++;
+                return;
+            }
+        else{
+            char resposta;
+            printf("\n================================\nSenha Inválida! Tente Novamente\n================================\n");
+            printf("Deseja Alterar a sua Senha? [S/N]: ");
+            scanf(" %c",&resposta);
+            resposta=toupper(resposta);
+            while (resposta!='S' && resposta!='N'){
+                printf("Resposta Inválida! Tente Novamente\n");
+                scanf(" %c",&resposta);
+                resposta=toupper(resposta);
+                }
+                if(resposta=='S'){
+                    recuperar_senha(banco[indice_remetente].email, banco, indice_remetente);
+                    return;
+                }
+                else{
+                    return;
+                } 
+            }
+        
     }
 
 }
@@ -380,7 +422,7 @@ int main(){
     int total_usuarios=0;
 
     //arquivo de registro de transferencia
-    FILE *arq_trans = fopen("data/Transferências.csv", "r+");
+    FILE *arq_trans = fopen("/home/sarni/Área de trabalho/1º Semestre/UaiBank/Projeto/data/Transferências.csv", "r+");
     fprintf(arq_trans,"ID_remetente,ID_destinatario,Valor\n");
     if (arq_trans == NULL) {
     printf("Erro ao abrir arquivo de transferencias!\n");
@@ -392,7 +434,7 @@ int main(){
         printf(" [1]-Adicionar Novo Usuário\n [2]-Adicionar Múltiplos Usuários\n [3]-Buscar por ID\n [4]-Realizar Transferência\n [5]-Remover Usúario\n [0]-Encerrar e Salvar\nEscolha: ");
         scanf("%d", &escolha);
         switch (escolha){
-            case 1: novo_usuario(&banco_dados, &total_usuarios, &gerador_id); break;
+            case 1: limpa_buffer(); novo_usuario(&banco_dados, &total_usuarios, &gerador_id); break;
             case 2: multiplos_usuario(&banco_dados, &total_usuarios, &gerador_id);break;
             case 3: busca_id(banco_dados, total_usuarios); break;
             case 4: transferencia(banco_dados, total_usuarios,arq_trans); break;
