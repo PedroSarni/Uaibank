@@ -31,10 +31,6 @@ int gerar_codigo_2FA(){
     return (rand()%90000)+10000;
 }
 
-void enviar_sms_2FA(int codigo, char telefone[]){
-
-}
-
 void enviar_email_2FA(int codigo, char email[]){
     char comando[300];
 
@@ -52,26 +48,10 @@ void enviar_email_2FA(int codigo, char email[]){
     }
 }
 
-void recuperar_senha(char telefone[], char email[],pessoa *banco,int usuario){
+void recuperar_senha(char email[], pessoa *banco, int usuario){
     int codigo = gerar_codigo_2FA();
-    int metodo;
 
-    printf("\nComo deseja receber o código?\n");
-    printf("[1] SMS\n");
-    printf("[2] E-mail\n");
-    printf("Escolha: ");
-    scanf("%d", &metodo);
-
-    if(metodo == 1){
-        enviar_sms_2FA(codigo, telefone);
-    }
-    else if(metodo == 2){
-        enviar_email_2FA(codigo, email);
-    }
-    else{
-        printf("Opção inválida!\n");
-        return;
-    }
+    enviar_email_2FA(codigo, email);
 
     int digitado;
     printf("\nDigite o código recebido: ");
@@ -100,30 +80,42 @@ void recuperar_senha(char telefone[], char email[],pessoa *banco,int usuario){
 }
 
 bool limparTelefone(const char *entrada, char *saida) {
-    if (entrada == NULL || saida == NULL || strlen(entrada)<11) {
+    if (entrada == NULL || saida == NULL) {
         if (saida != NULL) saida[0] = '\0';
-        printf("Número de telefone inválido! Tente Novamente\n");
         return true;
     }
 
-    char apenasNumeros[30];
-    int j = 0;
-    for (int i = 0; entrada[i] != '\0'; i++) {
+    char numeros[16];
+    size_t quantidade = 0;
+
+    for (size_t i = 0; entrada[i] != '\0'; i++) {
         if (isdigit((unsigned char)entrada[i])) {
-            apenasNumeros[j++] = entrada[i];
+            if (quantidade >= sizeof(numeros) - 1) {
+                saida[0] = '\0';
+                printf("Número de telefone inválido! Tente novamente.\n");
+                return true;
+            }
+            numeros[quantidade++] = entrada[i];
         }
     }
-    apenasNumeros[j] = '\0';
-    char resultado[30];
-    int inicio = 0;
+    numeros[quantidade] = '\0';
 
-    if (strlen(apenasNumeros) > 11 &&
-        strncmp(apenasNumeros, "55", 2) == 0) {
-        inicio = 2;
+    const char *numero_local = numeros;
+    if (quantidade == 15 && strncmp(numeros, "0055", 4) == 0) {
+        numero_local += 4;
+    } else if (quantidade == 13 && strncmp(numeros, "55", 2) == 0) {
+        numero_local += 2;
+    } else if (quantidade == 12 && numeros[0] == '0') {
+        numero_local += 1;
     }
 
-    strcpy(resultado, apenasNumeros + inicio);
-    strcpy(saida, resultado);
+    if (strlen(numero_local) != 11) {
+        saida[0] = '\0';
+        printf("Número de telefone inválido! Informe DDD e número.\n");
+        return true;
+    }
+
+    snprintf(saida, 30, "+55%s", numero_local);
     return false;
 }
 
@@ -259,7 +251,7 @@ void busca_id(pessoa *banco, int usuario){
                     resposta=toupper(resposta);
                 }
                 if(resposta=='S'){
-                    recuperar_senha(banco[i].telefone,banco[i].email,banco, i);
+                    recuperar_senha(banco[i].email, banco, i);
                     return;
                 }
                 else{
@@ -371,7 +363,7 @@ void salvar_encerrar(pessoa *banco, int usuarios){
     }
     fprintf(arq,"ID,Nome,Sexo,Idade,Estado,Saldo\n");
     for(int i = 0; i < usuarios; i++){
-        fprintf(arq, "%d,%s,%c,%d,%s,%.2f\n", banco[i].id, banco[i].nome,banco[i].sexo, banco[i].idade,banco[i].estado, banco[i].saldo);
+        fprintf(arq, "%d,%s,%c,%d,%s,%s,%s,%.2f\n", banco[i].id, banco[i].nome,banco[i].sexo, banco[i].idade,banco[i].estado,banco[i].email,banco[i].telefone, banco[i].saldo);
     }\
 
     fclose(arq);
@@ -380,7 +372,6 @@ void salvar_encerrar(pessoa *banco, int usuarios){
 
 
 int main(){
-    //gemini mandou eu executar isso na main pelo menos uma vez
     srand(time(NULL));
 
     pessoa *banco_dados=NULL;
